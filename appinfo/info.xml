@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<info>
+  <id>globalquota</id>
+  <name>Global Quota</name>
+  <summary>Define a global storage quota for Nextcloud instances</summary>
+  <description>
+    This app allows administrators to define a global storage quota 
+    for the entire Nextcloud instance, regardless of the underlying storage.
+  </description>
+  <version>1.0.0</version>
+  <licence>AGPL</licence>
+  <author>Custom</author>
+  <namespace>GlobalQuota</namespace>
+  <category>administration</category>
+</info>
