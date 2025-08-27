@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+
+    <id>globalquota</id>
+    <name>Global Quota</name>
+    <summary>Define a global storage quota for Nextcloud instances</summary>
+    <description>
+        <![CDATA[
+        This app allows administrators to define a **global storage quota** for the entire Nextcloud instance, regardless of the underlying storage (local, S3 or other external backends).  
+        
+        - Shows total, used, and free space in the admin settings.  
+        - Provides the `occ globalquota:recalc` command to recalculate and precache global usage.  
+        - Exposes a secure admin-only API endpoint with quota, usage and free space values.  
+
+        Ideal for setups using external storage like S3 where the default Nextcloud storage graph is not available.
+        ]]>
+    </description>
+
+    <version>1.0.0</version>
+    <licence>AGPL</licence>
+    <author>David Camejo</author>
+    <namespace>GlobalQuota</namespace>
+    <category>administration</category>
+
+    <dependencies>
+        <nextcloud min-version="28" max-version="30"/>
+        <php min-version="8.1"/>
+    </dependencies>
+</info>
