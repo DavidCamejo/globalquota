@@ -11,7 +11,7 @@ class Application extends App {
 
         $container = $this->getContainer();
 
-        // Registrar QuotaService con sus 4 dependencias
+        // Registrar el servicio central de GlobalQuota con sus dependencias
         $container->registerService(QuotaService::class, function($c) {
             return new QuotaService(
                 $c->query('OCP\\IConfig'),
