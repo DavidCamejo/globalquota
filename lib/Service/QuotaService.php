@@ -51,10 +51,8 @@ class QuotaService {
         foreach ($this->userManager->search('') as $user) {
             try {
                 $folder = $this->rootFolder->getUserFolder($user->getUID());
-                $storage = $folder->getStorage();
-                if ($storage && $storage->getCache()) {
-                    $totalUsed += $storage->getCache()->getUsedSpace('');
-                }
+                // Usar getSize() en lugar de getCache()->getUsedSpace()
+                $totalUsed += $folder->getSize();
             } catch (\Exception $e) {
                 // Skip user if there's an error accessing their folder
                 continue;

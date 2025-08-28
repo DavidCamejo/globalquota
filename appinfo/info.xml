@@ -1,20 +1,27 @@
 <?xml version="1.0"?>
-<info>
-  <id>globalquota</id>
-  <name>Global Quota</name>
-  <summary>Define a global storage quota for Nextcloud instances</summary>
-  <description>
-    This app allows administrators to define a global storage quota 
-    for the entire Nextcloud instance, regardless of the underlying storage.
-    Includes upload blocking when quota is exceeded.
-  </description>
-  <version>1.1.1</version>
-  <licence>AGPL</licence>
-  <author>David Camejo</author>
-  <namespace>GlobalQuota</namespace>
-  <default_enable>yes</default_enable>
-  <category>administration</category>
-  <dependencies>
-    <nextcloud min-version="25" max-version="30"/>
-  </dependencies>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>globalquota</id>
+    <name>Global Quota</name>
+    <summary>Manage global storage quota across all users</summary>
+    <description><![CDATA[
+Global Quota allows administrators to set and monitor a global storage limit across all users in the Nextcloud instance.
+    ]]></description>
+    
+    <version>1.1.0</version>
+    <licence>agpl</licence>
+    <author>David Camejo</author>
+    <namespace>GlobalQuota</namespace>
+    <category>tools</category>
+    
+    <dependencies>
+        <nextcloud min-version="25" max-version="30"/>
+        <php min-version="8.0"/>
+    </dependencies>
+    
+    <commands>
+        <command>OCA\GlobalQuota\Command\StatusCommand</command>
+        <command>OCA\GlobalQuota\Command\SetQuotaCommand</command>
+        <command>OCA\GlobalQuota\Command\RecalcCommand</command>
+    </commands>
 </info>
