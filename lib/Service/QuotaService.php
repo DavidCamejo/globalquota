@@ -13,7 +13,7 @@ class QuotaService {
     private $rootFolder;
     private $timeFactory;
     private $cacheKey = 'globalquota_usage';
-    private $cacheTTL = 300;
+    private $cacheTTL = 300; // 5 minutos
 
     public function __construct(
         IConfig $config,
@@ -49,8 +49,16 @@ class QuotaService {
 
         $totalUsed = 0;
         foreach ($this->userManager->search('') as $user) {
-            $folder = $this->rootFolder->getUserFolder($user->getUID());
-            $totalUsed += $folder->getStorage()->getCache()->getUsedSpace('');
+            try {
+                $folder = $this->rootFolder->getUserFolder($user->getUID());
+                $storage = $folder->getStorage();
+                if ($storage && $storage->getCache()) {
+                    $totalUsed += $storage->getCache()->getUsedSpace('');
+                }
+            } catch (\Exception $e) {
+                // Skip user if there's an error accessing their folder
+                continue;
+            }
         }
 
         $this->setCache($totalUsed);
