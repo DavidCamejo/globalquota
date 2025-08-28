@@ -44,6 +44,10 @@ class Application extends App implements IBootstrap {
             \OCP\Files\Events\Node\BeforeFileUpdatedEvent::class,
             GlobalQuotaListener::class
         );
+        $context->registerServiceAlias(
+            \OCP\System\ISystemInfo::class,
+            \OCA\GlobalQuota\SystemInfo\GlobalQuotaSystemInfo::class
+        );
     }
 
     public function boot(IBootContext $context): void {

@@ -8,10 +8,11 @@
     for the entire Nextcloud instance, regardless of the underlying storage.
     Includes upload blocking when quota is exceeded.
   </description>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <licence>AGPL</licence>
   <author>David Camejo</author>
   <namespace>GlobalQuota</namespace>
+  <default_enable>yes</default_enable>
   <category>administration</category>
   <dependencies>
     <nextcloud min-version="25" max-version="30"/>
