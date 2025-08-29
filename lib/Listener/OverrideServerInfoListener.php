@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OCA\GlobalQuota\Listener;
 
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
-use OCA\ServerInfo\Events\LoadAdditionalDataEvent;
 use OCA\GlobalQuota\Service\QuotaService;
+use OCA\ServerInfo\Events\LoadAdditionalDataEvent;
 
 class OverrideServerInfoListener implements IEventListener {
-    private $quotaService;
+    private QuotaService $quotaService;
 
     public function __construct(QuotaService $quotaService) {
         $this->quotaService = $quotaService;
@@ -19,28 +21,28 @@ class OverrideServerInfoListener implements IEventListener {
             return;
         }
 
-        $status = $this->quotaService->getStatus();
+        try {
+            $status = $this->quotaService->getStatus();
+            
+            $event->addData('disk', [
+                'used' => $status['used_bytes'],
+                'available' => $status['free_bytes'],
+                'total' => $status['quota_bytes'],
+                'percent' => $status['percentage_used'],
+                'mount' => 'GlobalQuota',
+                'filesystem' => 'Global Storage'
+            ]);
 
-        // Añadir datos de GlobalQuota al sistema
-        $systemData = $event->getData()['nextcloud']['system'] ?? [];
-        
-        // Sobrescribir/añadir campos de quota global
-        $systemData['quota_total'] = $status['quota_bytes'];
-        $systemData['quota_used'] = $status['used_bytes'];
-        $systemData['quota_free'] = $status['free_bytes'];
-        $systemData['quota_percentage'] = $status['usage_percentage'];
+            $event->addData('quota_used', $status['used_bytes']);
+            $event->addData('quota_total', $status['quota_bytes']);
+            $event->addData('quota_free', $status['free_bytes']);
+            $event->addData('quota_percentage', $status['percentage_used']);
 
-        // También añadir como 'disk' para compatibilidad con versiones anteriores
-        $event->addData('disk', [
-            'total' => $status['quota_bytes'],
-            'used' => $status['used_bytes'],
-            'free' => $status['free_bytes']
-        ]);
-
-        // Actualizar la sección system
-        $nextcloudData = $event->getData()['nextcloud'] ?? [];
-        $nextcloudData['system'] = $systemData;
-        
-        $event->setData('nextcloud', $nextcloudData);
+        } catch (\Exception $e) {
+            \OC::$server->getLogger()->error(
+                'GlobalQuota: Error al obtener datos para ServerInfo: ' . $e->getMessage(),
+                ['app' => 'globalquota']
+            );
+        }
     }
 }

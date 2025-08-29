@@ -1,0 +1,58 @@
+/**
+ * GlobalQuota Admin Settings Styles
+ */
+
+#globalquota-settings {
+    margin-bottom: 30px;
+}
+
+#globalquota-settings h2 {
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.globalquota-chart-container {
+    background: var(--color-main-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-large);
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.globalquota-chart-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin: 20px 0;
+}
+
+#globalquota-chart {
+    max-width: 280px;
+    max-height: 280px;
+}
+
+.globalquota-stats {
+    flex: 1;
+    min-width: 200px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-border-dark);
+    padding: 6px 0;
+    font-family: monospace;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.globalquota-actions {
+    margin-top: 10px;
+}
+
+.globalquota-actions .button {
+    padding: 6px 14px;
+    margin-right: 8px;
+}

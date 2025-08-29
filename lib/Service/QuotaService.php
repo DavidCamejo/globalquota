@@ -74,6 +74,17 @@ class QuotaService {
         ];
     }
 
+    public function recalculateUsage(): array {
+        // Fuerza el recálculo (sin cache)
+        $status = $this->getStatus(true);
+
+        // Borra el cache anterior y guarda el nuevo
+        $this->config->deleteAppValue('globalquota', $this->cacheKey);
+        $this->setCache($status['used_bytes']);
+
+        return $status;
+    }
+
     private function getCache(): ?array {
         $raw = $this->config->getAppValue('globalquota', $this->cacheKey, null);
         if ($raw === null) return null;
