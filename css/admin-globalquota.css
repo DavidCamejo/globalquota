@@ -1,52 +1,51 @@
-#globalquota {
-    margin: 20px 0;
+#globalquota.section {
+	margin-top: 20px;
 }
 
-.quota-container {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    margin: 20px 0;
+.globalquota-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	align-items: stretch;
 }
 
-.quota-chart {
-    flex-shrink: 0;
+.globalquota-chart-wrapper {
+	width: 280px;
+	min-height: 260px;
+	position: relative;
+	padding: 10px;
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	background: var(--color-main-background);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.quota-info {
-    flex: 1;
+.globalquota-stats {
+	flex: 1;
+	min-width: 260px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	background: var(--color-main-background);
 }
 
-.quota-item {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--color-border);
+.globalquota-stats h3 {
+	margin-top: 0;
 }
 
-.quota-label {
-    font-weight: bold;
-    color: var(--color-text-light);
+.globalquota-list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 12px 0;
 }
 
-.quota-value {
-    color: var(--color-main-text);
-    font-family: monospace;
+.globalquota-list li {
+	margin: 6px 0;
 }
 
-.quota-actions {
-    margin: 20px 0;
-}
-
-#quota-error {
-    margin-top: 10px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .quota-container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+.globalquota-error {
+	color: #b71c1c;
+	margin-top: 8px;
 }

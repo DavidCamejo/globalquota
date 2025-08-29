@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace OCA\GlobalQuota\AppInfo;
 
-use OCA\GlobalQuota\Settings\Admin;
 use OCP\AppFramework\App;
-use OCP\AppFramework\Bootstrap\IBootContext;
-use OCP\AppFramework\Bootstrap\IBootstrap;
-use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\AppFramework\IAppContainer;
 
-class Application extends App implements IBootstrap {
-    public const APP_ID = 'globalquota';
+class Application extends App {
+	public const APP_ID = 'globalquota';
 
-    public function __construct() {
-        parent::__construct(self::APP_ID);
-    }
+	public function __construct(array $urlParams = []) {
+		parent::__construct(self::APP_ID, $urlParams);
 
-    public function register(IRegistrationContext $context): void {
-        // Registrar el panel de configuración de administración
-        $context->registerSetting(Admin::class);
-    }
+		$container = $this->getContainer();
+		$this->registerServices($container);
+	}
 
-    public function boot(IBootContext $context): void {
-        // Aquí puedes agregar inicialización si la necesitas
-    }
+	private function registerServices(IAppContainer $c): void {
+		// Registrar servicios si aplica
+	}
 }
