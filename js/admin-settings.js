@@ -52,14 +52,14 @@
     }
 
     function loadQuotaData() {
-        fetch(OC.generateUrl('/apps/globalquota/status'))
+        fetch(OC.generateUrl('/apps/globalquota/quota'))
             .then(r => r.json())
             .then(data => {
-                if (data.success) {
-                    updateChart(data.data);
-                    updateStats(data.data);
+                if (typeof data.used !== 'undefined' && typeof data.total !== 'undefined') {
+                    updateChart(data);
+                    updateStats(data);
                 } else {
-                    showError('Error loading quota data: ' + data.error);
+                    showError('Error loading quota data');
                 }
             })
             .catch(err => {
@@ -71,7 +71,8 @@
     function updateChart(data) {
         if (!quotaChart) return;
         const used = data.used || 0;
-        const free = data.free || 0;
+        const free = data.available || data.free || 0; // soportar ambos nombres
+
         quotaChart.data.datasets[0].data = [used, free];
 
         const percentage = data.percentage || 0;
@@ -87,7 +88,7 @@
     function updateStats(data) {
         const elems = {
             'quota-used': data.formatted?.used || formatBytes(data.used),
-            'quota-free': data.formatted?.free || formatBytes(data.free),
+            'quota-free': data.formatted?.free || data.formatted?.available || formatBytes(data.free || data.available),
             'quota-total': data.formatted?.total || formatBytes(data.total),
             'quota-percentage': (data.percentage || 0).toFixed(1) + '%'
         };
@@ -98,7 +99,7 @@
     }
 
     function formatBytes(bytes) {
-        if (bytes === 0) return '0 B';
+        if (!bytes) return '0 B';
         const k = 1024; const sizes = ['B','KB','MB','GB','TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
