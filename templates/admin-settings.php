@@ -13,6 +13,10 @@ style('globalquota', 'admin-settings');
     <?php else: ?>
         <div class="globalquota-chart-container">
             <h3><?php p($l->t('Storage Usage')); ?></h3>
+            
+            <!-- Error display element -->
+            <div id="quota-error" style="display: none; color: #e74c3c; background: #fdf2f2; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #fecaca;"></div>
+            
             <div class="globalquota-chart-wrapper">
                 <canvas id="globalquota-chart" width="300" height="300"></canvas>
                 <div class="globalquota-stats">
