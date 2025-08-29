@@ -6,10 +6,17 @@
 (function() {
     'use strict';
 
+    // Validate Nextcloud environment
+    if (typeof OC === 'undefined' || typeof t === 'undefined') {
+        console.error('GlobalQuota: Nextcloud environment not available');
+        return;
+    }
+
     console.log('GlobalQuota admin JS loaded ✅');
 
     let quotaChart = null;
     let chartInitialized = false;
+    let dataLoaded = false;
 
     function initChart() {
         const canvas = document.getElementById('globalquota-chart');
@@ -69,8 +76,6 @@
             chartInitialized = true;
             console.log('GlobalQuota: Gráfico inicializado correctamente');
             
-            // Load data after chart is initialized
-            loadQuotaData();
         } catch (error) {
             console.error('GlobalQuota: Error al inicializar el gráfico:', error);
             quotaChart = null;
@@ -79,6 +84,13 @@
     }
 
     function loadQuotaData() {
+        // Prevent multiple simultaneous requests
+        if (dataLoaded) {
+            console.log('GlobalQuota: Data already loading, skipping...');
+            return;
+        }
+        
+        dataLoaded = true;
         console.log('GlobalQuota: Cargando datos...');
         
         // Clear any previous errors
@@ -113,8 +125,7 @@
             })
             .then(data => {
                 if (data && typeof data.used !== 'undefined' && typeof data.total !== 'undefined') {
-                    updateChart(data);
-                    updateStats(data);
+                    processQuotaData(data);
                 } else {
                     throw new Error('Invalid data structure');
                 }
@@ -137,8 +148,7 @@
                         console.log('GlobalQuota: Datos recibidos de /quota:', data);
                         
                         if (data && typeof data.used !== 'undefined' && typeof data.total !== 'undefined') {
-                            updateChart(data);
-                            updateStats(data);
+                            processQuotaData(data);
                         } else {
                             throw new Error('Invalid quota data structure');
                         }
@@ -147,7 +157,48 @@
                         console.error('GlobalQuota: Both endpoints failed:', fallbackError);
                         showError('Failed to load quota data from both endpoints');
                     });
+            })
+            .finally(() => {
+                dataLoaded = false;
             });
+    }
+
+    function processQuotaData(data) {
+        // Unified calculation logic for both chart and stats
+        const used = Number(data.used) || 0;
+        const total = Number(data.total) || 0;
+        const available = Number(data.available || data.free || 0);
+        
+        // Calculate free space with unified logic
+        let free;
+        if (total > 0) {
+            // If we have total, calculate free as total - used
+            free = Math.max(0, total - used);
+        } else if (available > 0) {
+            // If no total but we have available, use that
+            free = available;
+        } else {
+            // Fallback: assume no free space if we can't calculate
+            free = 0;
+        }
+
+        // Calculate percentage
+        const percentage = total > 0 ? ((used / total) * 100) : 0;
+
+        // Create normalized data object
+        const normalizedData = {
+            used: used,
+            free: free,
+            total: total > 0 ? total : (used + free),
+            percentage: percentage,
+            formatted: data.formatted || {}
+        };
+
+        console.log('GlobalQuota: Normalized data:', normalizedData);
+
+        // Update both chart and stats with the same data
+        updateChart(normalizedData);
+        updateStats(normalizedData);
     }
 
     function updateChart(data) {
@@ -156,33 +207,22 @@
             return;
         }
 
-        const used = Number(data.used) || 0;
-        const total = Number(data.total) || 0;
-        const available = Number(data.available || data.free || 0);
-        
-        // Calculate free space
-        let free = available;
-        if (total > 0 && total >= used) {
-            free = total - used;
-        } else if (available > 0) {
-            free = available;
-        } else {
-            free = Math.max(0, total - used);
-        }
+        console.log('GlobalQuota: Updating chart with:', { 
+            used: data.used, 
+            free: data.free, 
+            total: data.total 
+        });
 
-        console.log('GlobalQuota: Updating chart with:', { used, free, total });
-
-        quotaChart.data.datasets[0].data = [used, free];
+        quotaChart.data.datasets[0].data = [data.used, data.free];
 
         // Update colors based on usage percentage
-        const percentage = total > 0 ? (used / total) * 100 : 0;
         let usedColor = '#2ecc71'; // Green
         
-        if (percentage > 90) {
+        if (data.percentage > 90) {
             usedColor = '#e74c3c'; // Red
-        } else if (percentage > 75) {
+        } else if (data.percentage > 75) {
             usedColor = '#f39c12'; // Orange
-        } else if (percentage > 50) {
+        } else if (data.percentage > 50) {
             usedColor = '#f1c40f'; // Yellow
         }
 
@@ -191,20 +231,12 @@
     }
 
     function updateStats(data) {
-        const used = Number(data.used) || 0;
-        const total = Number(data.total) || 0;
-        const available = Number(data.available || data.free || 0);
-        
-        // Calculate free space and percentage
-        const free = total > 0 ? Math.max(0, total - used) : available;
-        const percentage = total > 0 ? ((used / total) * 100) : 0;
-
-        // Use formatted values if available, otherwise format the raw values
+        // Use the same normalized data for stats
         const elems = {
-            'quota-used': data.formatted?.used || formatBytes(used),
-            'quota-free': data.formatted?.free || data.formatted?.available || formatBytes(free),
-            'quota-total': data.formatted?.total || formatBytes(total),
-            'quota-percentage': percentage.toFixed(1) + '%'
+            'quota-used': data.formatted?.used || formatBytes(data.used),
+            'quota-free': data.formatted?.free || data.formatted?.available || formatBytes(data.free),
+            'quota-total': data.formatted?.total || formatBytes(data.total),
+            'quota-percentage': data.percentage.toFixed(1) + '%'
         };
 
         console.log('GlobalQuota: Updating stats with:', elems);
@@ -243,7 +275,7 @@
         
         // Also try Nextcloud notification system
         try {
-            if (typeof OC !== 'undefined' && OC.Notification) {
+            if (OC && OC.Notification) {
                 OC.Notification.showTemporary(msg, { type: 'error' });
             }
         } catch (e) {
@@ -292,9 +324,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('GlobalQuota: DOM loaded, iniciando...');
         
-        // Always try to load quota data for the stats
-        loadQuotaData();
-        
         // Initialize chart if canvas exists
         const canvas = document.getElementById('globalquota-chart');
         if (canvas) {
@@ -303,13 +332,19 @@
             loadChartJS()
                 .then(() => {
                     initChart();
+                    // Load data only after chart is ready
+                    loadQuotaData();
                 })
                 .catch(error => {
                     console.error('GlobalQuota: Failed to initialize chart:', error);
                     showError('Chart visualization not available');
+                    // Still load data for stats even if chart fails
+                    loadQuotaData();
                 });
         } else {
             console.warn('GlobalQuota: Canvas #globalquota-chart not found');
+            // Load data for stats only
+            loadQuotaData();
         }
         
         // Set up refresh button
