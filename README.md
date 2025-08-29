@@ -122,4 +122,3 @@ Both modes display:
 
 **Author:** David Camejo  
 **License:** AGPL-3.0
-```
