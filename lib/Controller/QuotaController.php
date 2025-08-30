@@ -129,8 +129,57 @@ class QuotaController extends Controller {
         }
     }
 
+    /** 
+     * @AdminRequired 
+     * @NoCSRFRequired 
+     * 
+     * Set quota endpoint for REST API compatibility
+     * Accepts both 'bytes' and 'quota_bytes' parameters
+     */
+    public function setQuota(): JSONResponse {
+        // Accept both 'bytes' and 'quota_bytes' for compatibility
+        $quotaBytes = $this->request->getParam('bytes') ?? $this->request->getParam('quota_bytes');
+        
+        if (!is_numeric($quotaBytes) || $quotaBytes < 0) {
+            return new JSONResponse([
+                'success' => false, 
+                'error' => 'Invalid quota value. Please provide a valid number in bytes parameter.'
+            ], 400);
+        }
+
+        try {
+            $this->quotaService->setQuota((int)$quotaBytes);
+            $status = $this->quotaService->getStatus();
+            
+            return new JSONResponse([
+                'success' => true,
+                'message' => 'Global quota set successfully',
+                'data' => [
+                    'quota_set' => (int)$quotaBytes,
+                    'quota_formatted' => $this->formatBytes((int)$quotaBytes),
+                    'current_status' => [
+                        'used' => $status['used_bytes'],
+                        'total' => $status['quota_bytes'],
+                        'free' => $status['free_bytes'],
+                        'percentage' => $status['usage_percentage'],
+                        'formatted' => [
+                            'used' => $this->formatBytes($status['used_bytes']),
+                            'total' => $this->formatBytes($status['quota_bytes']),
+                            'free' => $this->formatBytes($status['free_bytes'])
+                        ]
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return new JSONResponse([
+                'success' => false, 
+                'error' => 'Failed to set quota: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function formatBytes(int $bytes): string {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
